@@ -945,7 +945,7 @@ RosRangeVisionFusionApp::SyncedDetectionsCallback2(const autoware_msgs::Detected
     fusion_objects = FuseRangeVisionDetections2(in_vision_detections, in_range_detections, in_sensor_cloud);
     fused_boxes = ObjectsToBoxes(fusion_objects);
     fused_objects_labels = ObjectsToMarkers(fusion_objects);
-
+    
     publisher_fused_objects_.publish(fusion_objects);
     publisher_fused_boxes_.publish(fused_boxes);
     publisher_fused_text_.publish(fused_objects_labels);
@@ -988,8 +988,17 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections2(const autoware_msgs::Detecte
         pcl::PointCloud<pcl::PointXYZ>::Ptr temp_ptr(new pcl::PointCloud<pcl::PointXYZ>);
         vision_matched_cloud_ptr_vec.push_back(temp_ptr);
     }
+    // Original
+    // std::vector< pcl::PointCloud<pcl::PointXYZ>::Ptr > filtered_vision_matched_cloud_ptr_vec;
+    // for (size_t i = 0; i < in_vision_detections->objects.size(); i++){
+    //     pcl::PointCloud<pcl::PointXYZ>::Ptr temp_ptr(new pcl::PointCloud<pcl::PointXYZ>);
+    //     filtered_vision_matched_cloud_ptr_vec.push_back(temp_ptr);
+    // }
+
+    // TEST For Publishing Points
     std::vector< pcl::PointCloud<pcl::PointXYZ>::Ptr > filtered_vision_matched_cloud_ptr_vec;
-    for (size_t i = 0; i < in_vision_detections->objects.size(); i++){
+    int test_filtered_idx = in_vision_detections->objects.size();
+    for (size_t i = 0; i <= test_filtered_idx; i++){
         pcl::PointCloud<pcl::PointXYZ>::Ptr temp_ptr(new pcl::PointCloud<pcl::PointXYZ>);
         filtered_vision_matched_cloud_ptr_vec.push_back(temp_ptr);
     }
@@ -1067,16 +1076,15 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections2(const autoware_msgs::Detecte
             if( (std::abs(point_x - object_distance) > filter_threshold) ) continue;            
             
             filtered_vision_matched_cloud_ptr_vec[i]->points.push_back(vision_matched_cloud_ptr_vec[i]->points[j]);
-            // filtered_vision_matched_cloud_ptr_vec[0]->points.push_back(vision_matched_cloud_ptr_vec[i]->points[j]);
+            // TEST For Publishing Cloud
+            filtered_vision_matched_cloud_ptr_vec[test_filtered_idx]->points.push_back(vision_matched_cloud_ptr_vec[i]->points[j]);
         }
 
         sensor_msgs::PointCloud2 cluster_cloud_;
         ROS_INFO("filter size : %d", (int)filtered_vision_matched_cloud_ptr_vec[i]->points.size());
 
         pcl::toROSMsg(*filtered_vision_matched_cloud_ptr_vec[i], cluster_cloud_);
-        cluster_cloud_.header = in_sensor_cloud->header;
-        // Publish Last Filtered Points
-        publisher_test_points_.publish(cluster_cloud_);
+        cluster_cloud_.header = in_sensor_cloud->header;        
 
         // Set Pose
         for(unsigned int k=0; k<filtered_vision_matched_cloud_ptr_vec[i]->points.size(); k++){
@@ -1165,13 +1173,10 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections2(const autoware_msgs::Detecte
     }
 
     // Test
-    // sensor_msgs::PointCloud2 vision_matched_point_cloud;
-        
-    // pcl::toROSMsg(*vision_matched_cloud_ptr_vec[0], vision_matched_point_cloud);
-    // pcl::toROSMsg(*filtered_vision_matched_cloud_ptr_vec[0], vision_matched_point_cloud);
-    // vision_matched_point_cloud.header = in_sensor_cloud->header;
-
-    // publisher_test_points_.publish(vision_matched_point_cloud);
+    sensor_msgs::PointCloud2 vision_matched_point_cloud;
+    pcl::toROSMsg(*filtered_vision_matched_cloud_ptr_vec[test_filtered_idx], vision_matched_point_cloud);
+    vision_matched_point_cloud.header = in_sensor_cloud->header;
+    publisher_test_points_.publish(vision_matched_point_cloud);
     
     
     return fused_objects;
