@@ -96,7 +96,7 @@ class RosRangeVisionFusionApp
     ros::Subscriber                     points_raw_subscriber_;
     ros::Publisher                      publisher_test_points_;
     message_filters::Subscriber<sensor_msgs::PointCloud2>
-                                        *lidar_subscriber_;
+                                        *lidar_filter_subscriber_;
     // End
 
     message_filters::Subscriber<autoware_msgs::DetectedObjectArray>
@@ -143,8 +143,13 @@ class RosRangeVisionFusionApp
     size_t                              empty_frames_;
 
     typedef
+    // Start
+    // message_filters::sync_policies::ApproximateTime<autoware_msgs::DetectedObjectArray,
+    //                                                 autoware_msgs::DetectedObjectArray>  SyncPolicyT;
+    // End
     message_filters::sync_policies::ApproximateTime<autoware_msgs::DetectedObjectArray,
-                                                    autoware_msgs::DetectedObjectArray>  SyncPolicyT;
+                                                    autoware_msgs::DetectedObjectArray,
+                                                    sensor_msgs::PointCloud2>  SyncPolicyT;
 
     ros::Subscriber                     vision_objects_subscriber_;
     ros::Subscriber                     range_objects_subscriber_;

@@ -765,16 +765,25 @@ RosRangeVisionFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
     }
     else
     {
-        // Start
-        // vision_filter_subscriber_ = new message_filters::Subscriber<autoware_msgs::DetectedObjectArray>(node_handle_,
-        //                                                                                                 detected_objects_vision, 1);
-        // range_filter_subscriber_ = new message_filters::Subscriber<autoware_msgs::DetectedObjectArray>(node_handle_,
-        //                                                                                                 detected_objects_range, 1);
+        vision_filter_subscriber_ = new message_filters::Subscriber<autoware_msgs::DetectedObjectArray>(node_handle_,
+                                                                                                        detected_objects_vision, 1);
+        range_filter_subscriber_ = new message_filters::Subscriber<autoware_msgs::DetectedObjectArray>(node_handle_,
+                                                                                                        detected_objects_range, 1);
         // detections_synchronizer_ =
         //         new message_filters::Synchronizer<SyncPolicyT>(SyncPolicyT(10),
         //                                                        *vision_filter_subscriber_,
-        //                                                        *range_filter_subscriber_);
+        //                                                        *range_filter_subscriber_,);
         // detections_synchronizer_->registerCallback(boost::bind(&RosRangeVisionFusionApp::SyncedDetectionsCallback, this, _1, _2));
+
+        // Start
+        lidar_filter_subscriber_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(node_handle_,
+                                                                                                        lidar_topic_str, 1);
+        detections_synchronizer_ =
+                new message_filters::Synchronizer<SyncPolicyT>(SyncPolicyT(10),
+                                                               *vision_filter_subscriber_,
+                                                               *range_filter_subscriber_, *lidar_filter_subscriber_);
+        detections_synchronizer_->registerCallback(boost::bind(&RosRangeVisionFusionApp::SyncedDetectionsCallback2, this, _1, _2, _3));
+        ROS_INFO("SYNCHED!");
         // End
     }
 
@@ -899,12 +908,14 @@ RosRangeVisionFusionApp::SyncedDetectionsCallback2(const autoware_msgs::Detected
         empty_frames_++;
         return;
     }
+
     if (nullptr == in_range_detections
         && nullptr != in_vision_detections
         && !in_vision_detections->objects.empty())
     {
-        //publisher_fused_boxes_.publish(fused_boxes);
-        publisher_fused_objects_.publish(in_vision_detections);
+        ROS_INFO("!!");
+        // publisher_fused_boxes_.publish(fused_boxes);
+        // publisher_fused_objects_.publish(in_vision_detections);
         empty_frames_++;
         return;
     }
@@ -1064,10 +1075,9 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections2(const autoware_msgs::Detecte
 
         pcl::toROSMsg(*filtered_vision_matched_cloud_ptr_vec[i], cluster_cloud_);
         cluster_cloud_.header = in_sensor_cloud->header;
-
-        // TEST
+        // Publish Last Filtered Points
         publisher_test_points_.publish(cluster_cloud_);
-        
+
         // Set Pose
         for(unsigned int k=0; k<filtered_vision_matched_cloud_ptr_vec[i]->points.size(); k++){
             float point_y = filtered_vision_matched_cloud_ptr_vec[i]->points[k].y;
@@ -1078,7 +1088,6 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections2(const autoware_msgs::Detecte
             max_z = (max_z < point_z) ? point_z : max_z;
         }
 
-        // double pi = 3.14159265358;
         geometry_msgs::Pose pose_;
         
         pose_.position.x = object_distance + dimension_.x / 2;
@@ -1156,7 +1165,7 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections2(const autoware_msgs::Detecte
     }
 
     // Test
-    sensor_msgs::PointCloud2 vision_matched_point_cloud;
+    // sensor_msgs::PointCloud2 vision_matched_point_cloud;
         
     // pcl::toROSMsg(*vision_matched_cloud_ptr_vec[0], vision_matched_point_cloud);
     // pcl::toROSMsg(*filtered_vision_matched_cloud_ptr_vec[0], vision_matched_point_cloud);

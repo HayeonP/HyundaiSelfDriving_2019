@@ -5,7 +5,7 @@
     <arg name="min_car_dimensions" default="[2,2,4]" />
     <arg name="min_person_dimensions" default="[1,2,1]" />
     <arg name="min_truck_dimensions" default="[2,2,4.5]" />
-    <arg name="sync_topics" default="false" />
+    <arg name="sync_topics" default="true" />
     <arg name="base_id" default="base_link" />
     <!--Start-->
     <arg name="lidar_points_raw" default="/points_raw" />
