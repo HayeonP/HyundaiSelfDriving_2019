@@ -1,0 +1,10 @@
+<launch>
+  <rosparam file="$(find vision_darknet_detect)/cfg/roadsign_cfg.yaml" command="load"/>
+  <node pkg="vision_darknet_detect" name="roadsign_darknet_detect" type="roadsign_darknet_detect" output="screen"/>
+
+  <node pkg="detected_objects_visualizer" type="visualize_rects" name="roadsign_rects"
+        output="screen">
+    <param name="image_out" value="/image_rects"/>
+    <param name="object_src" value="/detection/image_detector/roadsigns"/> <!-- this is fixed by definition -->
+  </node>
+</launch>

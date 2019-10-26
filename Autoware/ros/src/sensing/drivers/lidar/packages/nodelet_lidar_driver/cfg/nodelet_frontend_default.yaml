@@ -1,0 +1,9 @@
+# mode : VLP_ONLY(0), OSI_ONLY(1), VLP_OSI_FUSION(2)
+mode : 1 
+# pcap_file : "/home/soorin/Documents/20190316_i30_kcity_10_20_height_45_1.pcap"
+# pcap_file : "/home/soorin/Documents/degree_0_ouster.pcap"
+pcap_file : ""
+ip_add_front : "192.168.1.2"
+# ip_add_front : "192.168.1.201"
+ip_add_left : "192.168.1.202"
+ip_add_right : "192.168.1.203"

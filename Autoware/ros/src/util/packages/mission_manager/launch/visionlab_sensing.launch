@@ -1,0 +1,21 @@
+<launch>
+    <!--CAMERA-->
+    <arg name="fps" default="20"/>                  
+    <arg name="CalibrationFile" default=""/>        
+    <arg name="mode" default="0"/>                  
+    <arg name="format" default="raw"/>              
+    <arg name="timeout" default="1000"/>            
+
+    <node pkg="autoware_pointgrey_drivers" type="grasshopper3_camera" name="grasshopper" output="screen">
+	<param name="fps" value="$(arg fps)"/>
+	<param name="calibrationfile" value="$(arg CalibrationFile)"/>
+	<param name="mode" value="$(arg mode)"/>
+	<param name="format" value="$(arg format)"/>
+	<param name="timeout" value="$(arg timeout)"/>
+    </node>
+
+    <!--v2x-->
+    <node pkg="v2x_object_detect" type="v2x_processor_main" name="v2x_processor_main" />
+    <rosparam command="load" file="$(find v2x_object_detect)/cfg/object_detect_parameters.cfg" />
+    <node pkg="parser" type="v2x_main" name="v2x_main" />    
+</launch>

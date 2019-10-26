@@ -1,0 +1,768 @@
+--- J2735_201603DA+ITSK4-0.4_new.asn	2019-01-24 06:42:52.000000000 +0900
++++ J2735_201603DA+ITSK4-0.4_fix.asn	2019-01-24 06:42:52.000000000 +0900
+@@ -134,10 +134,10 @@
+ 
+    -- Part II Content
+    partII        SEQUENCE (SIZE(1..8)) OF
+-                 PartIIcontent {{ BSMpartIIExtension }} OPTIONAL,
++                 PartIIcontent OPTIONAL,
+ 
+    regional      SEQUENCE (SIZE(1..4)) OF
+-                 RegionalExtension {{REGION.Reg-BasicSafetyMessage}} OPTIONAL,
++                 RegionalExtension {{Reg-BasicSafetyMessage}} OPTIONAL,
+    ...
+    }
+ 
+@@ -147,9 +147,9 @@
+    &Type
+    } WITH SYNTAX {&Type IDENTIFIED BY &id}
+ 
+-PartIIcontent  { PARTII-EXT-ID-AND-TYPE: Set} ::= SEQUENCE {
+-   partII-Id     PARTII-EXT-ID-AND-TYPE.&id( {Set} ),
+-   partII-Value  PARTII-EXT-ID-AND-TYPE.&Type( {Set}{@partII-Id} )
++PartIIcontent ::= SEQUENCE {
++   partII-Id     PARTII-EXT-ID-AND-TYPE.&id( {BSMpartIIExtension} ),
++   partII-Value  PARTII-EXT-ID-AND-TYPE.&Type( {BSMpartIIExtension}{@partII-Id} )
+    }
+ 
+ PartII-Id ::= INTEGER (0..63)
+@@ -177,7 +177,7 @@
+    requests    RequestedItemList,
+    -- Note: Above no longer uses the same request as probe management
+    regional    SEQUENCE (SIZE(1..4)) OF
+-               RegionalExtension {{REGION.Reg-CommonSafetyRequest}} OPTIONAL,
++               RegionalExtension {{Reg-CommonSafetyRequest}} OPTIONAL,
+    ...
+    }
+ 
+@@ -207,7 +207,7 @@
+    responseEquip   ITIS.IncidentResponseEquipment OPTIONAL,
+    responderType   ITIS.ResponderGroupAffected    OPTIONAL,
+    regional        SEQUENCE (SIZE(1..4)) OF
+-                   RegionalExtension {{REGION.Reg-EmergencyVehicleAlert}} OPTIONAL,
++                   RegionalExtension {{Reg-EmergencyVehicleAlert}} OPTIONAL,
+    ...
+    }
+ 
+@@ -231,7 +231,7 @@
+                   -- used to convey vehicle Panic Events,
+                   -- Set to indicate "Intersection Violation"
+    regional       SEQUENCE (SIZE(1..4)) OF
+-                  RegionalExtension {{REGION.Reg-IntersectionCollision}} OPTIONAL,
++                  RegionalExtension {{Reg-IntersectionCollision}} OPTIONAL,
+    ...
+    }
+ 
+@@ -255,7 +255,7 @@
+                      -- Any restriction ID tables which have
+                      -- established for these map entries
+    regional          SEQUENCE (SIZE(1..4)) OF
+-                     RegionalExtension {{REGION.Reg-MapData}} OPTIONAL,
++                     RegionalExtension {{Reg-MapData}} OPTIONAL,
+ 
+    -- NOTE:
+    -- Other map data will be added here as it is defined
+@@ -281,7 +281,7 @@
+              -- observe that not all NMEA sentences are limited to 82 characters
+    payload   NMEA-Payload,
+    regional  SEQUENCE (SIZE(1..4)) OF
+-             RegionalExtension {{REGION.Reg-NMEAcorrections}} OPTIONAL,
++             RegionalExtension {{Reg-NMEAcorrections}} OPTIONAL,
+    ...
+    }
+ 
+@@ -316,7 +316,7 @@
+    animalType          AnimalType                 OPTIONAL,
+ 
+    regional SEQUENCE (SIZE(1..4)) OF
+-            RegionalExtension {{REGION.Reg-PersonalSafetyMessage}} OPTIONAL,
++            RegionalExtension {{Reg-PersonalSafetyMessage}} OPTIONAL,
+    ...
+    }
+ 
+@@ -345,13 +345,17 @@
+                                           -- Control data frames and associated
+                                           -- trigger thresholds to be changed
+    regional             SEQUENCE (SIZE(1..4)) OF
+-                        RegionalExtension {{REGION.Reg-ProbeDataManagement}} OPTIONAL,
++                        RegionalExtension {{Reg-ProbeDataManagement}} OPTIONAL,
+    ...
+    }
+ 
+ 
+ 
+ 
++RegionalExtensionProbeVehicleData ::= SEQUENCE {
++   regionId     REG-EXT-ID-AND-TYPE.&id( {Reg-ProbeVehicleData} ),
++   regExtValue  REG-EXT-ID-AND-TYPE.&Type( {Reg-ProbeVehicleData}{@regionId} )
++   }
+ ProbeVehicleData ::= SEQUENCE {
+    timeStamp       MinuteOfTheYear OPTIONAL,
+    segNum          ProbeSegmentNumber OPTIONAL,
+@@ -368,13 +372,17 @@
+                                          -- along with the space and time
+                                          -- of the first measurement set
+    regional        SEQUENCE (SIZE(1..4)) OF
+-                   RegionalExtension {{REGION.Reg-ProbeVehicleData}} OPTIONAL,
++                   RegionalExtensionProbeVehicleData OPTIONAL,
+    ...
+    }
+ 
+ 
+ 
+ 
++RegionalExtensionRoadSideAlert ::= SEQUENCE {
++   regionId     REG-EXT-ID-AND-TYPE.&id( {Reg-RoadSideAlert} ),
++   regExtValue  REG-EXT-ID-AND-TYPE.&Type( {Reg-RoadSideAlert}{@regionId} )
++   }
+ RoadSideAlert ::= SEQUENCE {
+    msgCnt        MsgCount,
+    timeStamp     MinuteOfTheYear  OPTIONAL,
+@@ -411,7 +419,7 @@
+                  -- or other messages
+                  -- 1~2 octets in length
+    regional      SEQUENCE (SIZE(1..4)) OF
+-                 RegionalExtension {{REGION.Reg-RoadSideAlert}} OPTIONAL,
++                 RegionalExtensionRoadSideAlert OPTIONAL,
+    ...
+    }
+ 
+@@ -433,7 +441,7 @@
+    -- one or more RTCM messages
+    msgs        RTCMmessageList,
+    regional    SEQUENCE (SIZE(1..4)) OF
+-               RegionalExtension {{REGION.Reg-RTCMcorrections}} OPTIONAL,
++               RegionalExtension {{Reg-RTCMcorrections}} OPTIONAL,
+    ...
+    }
+ 
+@@ -453,7 +461,7 @@
+    -- in the RegionalSPAT entry below
+ 
+    regional      SEQUENCE (SIZE(1..4)) OF
+-                 RegionalExtension {{REGION.Reg-SPAT}} OPTIONAL,
++                 RegionalExtension {{Reg-SPAT}} OPTIONAL,
+    ...
+    }
+ 
+@@ -476,7 +484,7 @@
+                    -- and may contain additional transit data
+ 
+    regional        SEQUENCE (SIZE(1..4)) OF
+-                   RegionalExtension {{REGION.Reg-SignalRequestMessage}} OPTIONAL,
++                   RegionalExtension {{Reg-SignalRequestMessage}} OPTIONAL,
+    ...
+    }
+ 
+@@ -492,7 +500,7 @@
+    status          SignalStatusList,
+ 
+    regional        SEQUENCE (SIZE(1..4)) OF
+-                   RegionalExtension {{REGION.Reg-SignalStatusMessage}} OPTIONAL,
++                   RegionalExtension {{Reg-SignalStatusMessage}} OPTIONAL,
+    ...
+    }
+ 
+@@ -510,7 +518,7 @@
+    dataFrames  TravelerDataFrameList,
+ 
+    regional    SEQUENCE (SIZE(1..4)) OF
+-               RegionalExtension {{REGION.Reg-TravelerInformation}} OPTIONAL,
++               RegionalExtension {{Reg-TravelerInformation}} OPTIONAL,
+    ...
+    }
+ 
+@@ -520,82 +528,82 @@
+ TestMessage00 ::= SEQUENCE {
+    header    Header   OPTIONAL,
+    -- All content is added in below data frame
+-   regional  RegionalExtension {{REGION.Reg-TestMessage00}} OPTIONAL,
++   regional  RegionalExtension {{Reg-TestMessage00}} OPTIONAL,
+    ...
+    }
+ TestMessage01 ::= SEQUENCE {
+    header    Header   OPTIONAL,
+-   regional  RegionalExtension {{REGION.Reg-TestMessage01}} OPTIONAL,
++   regional  RegionalExtension {{Reg-TestMessage01}} OPTIONAL,
+    ...
+    }
+ TestMessage02 ::= SEQUENCE {
+    header    Header   OPTIONAL,
+-   regional  RegionalExtension {{REGION.Reg-TestMessage02}} OPTIONAL,
++   regional  RegionalExtension {{Reg-TestMessage02}} OPTIONAL,
+    ...
+    }
+ TestMessage03 ::= SEQUENCE {
+    header    Header   OPTIONAL,
+-   regional  RegionalExtension {{REGION.Reg-TestMessage03}} OPTIONAL,
++   regional  RegionalExtension {{Reg-TestMessage03}} OPTIONAL,
+    ...
+    }
+ TestMessage04 ::= SEQUENCE {
+    header    Header   OPTIONAL,
+-   regional  RegionalExtension {{REGION.Reg-TestMessage04}} OPTIONAL,
++   regional  RegionalExtension {{Reg-TestMessage04}} OPTIONAL,
+    ...
+    }
+ TestMessage05 ::= SEQUENCE {
+    header    Header   OPTIONAL,
+-   regional  RegionalExtension {{REGION.Reg-TestMessage05}} OPTIONAL,
++   regional  RegionalExtension {{Reg-TestMessage05}} OPTIONAL,
+    ...
+    }
+ TestMessage06 ::= SEQUENCE {
+    header    Header   OPTIONAL,
+-   regional  RegionalExtension {{REGION.Reg-TestMessage06}} OPTIONAL,
++   regional  RegionalExtension {{Reg-TestMessage06}} OPTIONAL,
+    ...
+    }
+ TestMessage07 ::= SEQUENCE {
+    header    Header   OPTIONAL,
+-   regional  RegionalExtension {{REGION.Reg-TestMessage07}} OPTIONAL,
++   regional  RegionalExtension {{Reg-TestMessage07}} OPTIONAL,
+    ...
+    }
+ TestMessage08 ::= SEQUENCE {
+    header    Header   OPTIONAL,
+-   regional  RegionalExtension {{REGION.Reg-TestMessage08}} OPTIONAL,
++   regional  RegionalExtension {{Reg-TestMessage08}} OPTIONAL,
+    ...
+    }
+ TestMessage09 ::= SEQUENCE {
+    header    Header   OPTIONAL,
+-   regional  RegionalExtension {{REGION.Reg-TestMessage09}} OPTIONAL,
++   regional  RegionalExtension {{Reg-TestMessage09}} OPTIONAL,
+    ...
+    }
+ TestMessage10 ::= SEQUENCE {
+    header    Header   OPTIONAL,
+-   regional  RegionalExtension {{REGION.Reg-TestMessage10}} OPTIONAL,
++   regional  RegionalExtension {{Reg-TestMessage10}} OPTIONAL,
+    ...
+    }
+ TestMessage11 ::= SEQUENCE {
+    header    Header   OPTIONAL,
+-   regional  RegionalExtension {{REGION.Reg-TestMessage11}} OPTIONAL,
++   regional  RegionalExtension {{Reg-TestMessage11}} OPTIONAL,
+    ...
+    }
+ TestMessage12 ::= SEQUENCE {
+    header    Header   OPTIONAL,
+-   regional  RegionalExtension {{REGION.Reg-TestMessage12}} OPTIONAL,
++   regional  RegionalExtension {{Reg-TestMessage12}} OPTIONAL,
+    ...
+    }
+ TestMessage13 ::= SEQUENCE {
+    header    Header   OPTIONAL,
+-   regional  RegionalExtension {{REGION.Reg-TestMessage13}} OPTIONAL,
++   regional  RegionalExtension {{Reg-TestMessage13}} OPTIONAL,
+    ...
+    }
+ TestMessage14 ::= SEQUENCE {
+    header    Header   OPTIONAL,
+-   regional  RegionalExtension {{REGION.Reg-TestMessage14}} OPTIONAL,
++   regional  RegionalExtension {{Reg-TestMessage14}} OPTIONAL,
+    ...
+    }
+ TestMessage15 ::= SEQUENCE {
+    header    Header   OPTIONAL,
+-   regional  RegionalExtension {{REGION.Reg-TestMessage15}} OPTIONAL,
++   regional  RegionalExtension {{Reg-TestMessage15}} OPTIONAL,
+    ...
+    }
+ 
+@@ -648,7 +656,7 @@
+                -- when absent, the AdvisorySpeed applies to
+                -- all motor vehicle types
+    regional    SEQUENCE (SIZE(1..4)) OF
+-               RegionalExtension {{REGION.Reg-AdvisorySpeed}} OPTIONAL,
++               RegionalExtension {{Reg-AdvisorySpeed}} OPTIONAL,
+    ...
+    }
+ 
+@@ -746,7 +754,7 @@
+                          -- the reference lane's initial path point.
+                          -- The Z axis remains untouched.
+    regional  SEQUENCE (SIZE(1..4)) OF
+-             RegionalExtension {{REGION.Reg-ComputedLane}} OPTIONAL,
++             RegionalExtension {{Reg-ComputedLane}} OPTIONAL,
+    ...
+    }
+ 
+@@ -842,7 +850,7 @@
+                         -- high certainty that there are none present,
+                         -- otherwise element is not sent.
+    regional  SEQUENCE (SIZE(1..4)) OF
+-             RegionalExtension {{REGION.Reg-ConnectionManeuverAssist}} OPTIONAL,
++             RegionalExtension {{Reg-ConnectionManeuverAssist}} OPTIONAL,
+    ...
+    }
+ 
+@@ -966,7 +974,7 @@
+                  -- The spatial distance over which this
+                  -- message applies and should be presented to the driver
+    regional      SEQUENCE (SIZE(1..4)) OF
+-                 RegionalExtension {{REGION.Reg-EventDescription}} OPTIONAL,
++                 RegionalExtension {{Reg-EventDescription}} OPTIONAL,
+    ...
+    }
+ 
+@@ -1021,7 +1029,7 @@
+                     -- overlay (run on top of, and not simply cross)
+                     -- the path of this lane when used
+    regional  SEQUENCE (SIZE(1..4)) OF
+-             RegionalExtension {{REGION.Reg-GenericLane}} OPTIONAL,
++             RegionalExtension {{Reg-GenericLane}} OPTIONAL,
+    ...
+    }
+ 
+@@ -1047,7 +1055,7 @@
+       } OPTIONAL,
+ 
+    regional   SEQUENCE (SIZE(1..4)) OF
+-            RegionalExtension {{REGION.Reg-GeographicalPath}} OPTIONAL,
++            RegionalExtension {{Reg-GeographicalPath}} OPTIONAL,
+    ...
+    }
+ 
+@@ -1062,7 +1070,7 @@
+    circle           Circle, -- A point and radius
+ 
+    regional         SEQUENCE (SIZE(1..4)) OF
+-                    RegionalExtension {{REGION.Reg-GeometricProjection}} OPTIONAL,
++                    RegionalExtension {{Reg-GeometricProjection}} OPTIONAL,
+    ...
+    }
+ 
+@@ -1121,7 +1129,7 @@
+                            -- preempt or priority zones
+ 
+    regional     SEQUENCE (SIZE(1..4)) OF
+-                RegionalExtension {{REGION.Reg-IntersectionGeometry}} OPTIONAL,
++                RegionalExtension {{Reg-IntersectionGeometry}} OPTIONAL,
+    ...
+    }
+ 
+@@ -1174,7 +1182,7 @@
+                 -- Assist data
+ 
+    regional     SEQUENCE (SIZE(1..4)) OF
+-                RegionalExtension {{REGION.Reg-IntersectionState}} OPTIONAL,
++                RegionalExtension {{Reg-IntersectionState}} OPTIONAL,
+    ...
+    }
+ 
+@@ -1257,7 +1265,7 @@
+    directionalUse  LaneDirection,      -- directions of lane use
+    sharedWith      LaneSharing,        -- co-users of the lane path
+    laneType        LaneTypeAttributes, -- specific lane type data
+-   regional        RegionalExtension {{REGION.Reg-LaneAttributes}} OPTIONAL
++   regional        RegionalExtension {{Reg-LaneAttributes}} OPTIONAL
+    }
+ 
+ 
+@@ -1285,7 +1293,7 @@
+ 
+     -- Add others as needed, in regional space
+     regional  SEQUENCE (SIZE(1..4)) OF
+-              RegionalExtension {{REGION.Reg-LaneDataAttribute}},
++              RegionalExtension {{Reg-LaneDataAttribute}},
+     ...
+     }
+ 
+@@ -1334,7 +1342,7 @@
+                 -- speed expressed in mph into units of m/s
+ 
+    regional     SEQUENCE (SIZE(1..4)) OF
+-                RegionalExtension {{REGION.Reg-MovementEvent}} OPTIONAL,
++                RegionalExtension {{Reg-MovementEvent}} OPTIONAL,
+    ...
+    }
+ 
+@@ -1366,7 +1374,7 @@
+                       -- IntersectionState when common information applies to
+                       -- different lanes in the same way
+    regional           SEQUENCE (SIZE(1..4)) OF
+-                      RegionalExtension {{REGION.Reg-MovementState}} OPTIONAL,
++                      RegionalExtension {{Reg-MovementState}} OPTIONAL,
+    ...
+    }
+ 
+@@ -1488,7 +1496,7 @@
+                 -- elevations between nodes are a linear taper between pts
+                 -- the value of zero shall not be sent here
+    regional     SEQUENCE (SIZE(1..4)) OF
+-                RegionalExtension {{REGION.Reg-NodeAttributeSetLL}} OPTIONAL,
++                RegionalExtension {{Reg-NodeAttributeSetLL}} OPTIONAL,
+    ...
+    }
+ 
+@@ -1517,7 +1525,7 @@
+                 -- elevations between nodes are a linear taper between pts
+                 -- the value of zero shall not be sent here
+    regional     SEQUENCE (SIZE(1..4)) OF
+-                RegionalExtension {{REGION.Reg-NodeAttributeSetXY}} OPTIONAL,
++                RegionalExtension {{Reg-NodeAttributeSetXY}} OPTIONAL,
+    ...
+    }
+ 
+@@ -1567,7 +1575,7 @@
+    node-LL5         Node-LL-44B,    -- within +- 23.189096 Kmeters of last node
+    node-LL6         Node-LL-48B,    -- within +- 92.756481 Kmeters of last node
+    node-LatLon      Node-LLmD-64b,  -- node is a full 32b Lat/Lon range
+-   regional         RegionalExtension {{REGION.Reg-NodeOffsetPointLL}}
++   regional         RegionalExtension {{Reg-NodeOffsetPointLL}}
+                                     -- node which follows is of a
+                                     -- regional definition type
+    }
+@@ -1582,7 +1590,7 @@
+    node-XY5         Node-XY-28b,    -- node is within  81.91m of last node
+    node-XY6         Node-XY-32b,    -- node is within 327.67m of last node
+    node-LatLon      Node-LLmD-64b,  -- node is a full 32b Lat/Lon range
+-   regional         RegionalExtension {{REGION.Reg-NodeOffsetPointXY}}
++   regional         RegionalExtension {{Reg-NodeOffsetPointXY}}
+                                     -- node which follows is of a
+                                     -- regional definition type
+    }
+@@ -1692,7 +1700,7 @@
+    long       Longitude,               -- in 1/10th micro degrees
+    elevation  Elevation  OPTIONAL,     -- in 10 cm units
+    regional   SEQUENCE (SIZE(1..4)) OF
+-              RegionalExtension {{REGION.Reg-Position3D}} OPTIONAL,
++              RegionalExtension {{Reg-Position3D}} OPTIONAL,
+    ...
+    }
+ 
+@@ -1714,7 +1722,7 @@
+ PreemptPriorityList ::= SEQUENCE (SIZE(1..32)) OF SignalControlZone
+ 
+ SignalControlZone ::=  SEQUENCE {
+-  zone  RegionalExtension {{REGION.Reg-SignalControlZone}},
++  zone  RegionalExtension {{Reg-SignalControlZone}},
+   ...
+   }
+ 
+@@ -1795,7 +1803,7 @@
+                      -- current vehicle schedule adherence
+ 
+    regional          SEQUENCE (SIZE(1..4)) OF
+-                     RegionalExtension {{REGION.Reg-RequestorDescription}} OPTIONAL,
++                     RegionalExtension {{Reg-RequestorDescription}} OPTIONAL,
+    ...
+    }
+ 
+@@ -1820,7 +1828,7 @@
+    iso3883      Iso3833VehicleType OPTIONAL,
+    hpmsType     VehicleType OPTIONAL,  -- HPMS classification types
+ 
+-   regional     RegionalExtension {{REGION.Reg-RequestorType}} OPTIONAL,
++   regional     RegionalExtension {{Reg-RequestorType}} OPTIONAL,
+    ...
+    }
+ 
+@@ -1845,7 +1853,7 @@
+    basicType   RestrictionAppliesTo,
+                -- a set of the most commonly used types
+    regional    SEQUENCE (SIZE(1..4)) OF
+-               RegionalExtension {{REGION.Reg-RestrictionUserType}},
++               RegionalExtension {{Reg-RestrictionUserType}},
+    ...
+    }
+ 
+@@ -1897,7 +1905,7 @@
+    roadLaneSet RoadLaneSetList,
+ 
+    regional    SEQUENCE (SIZE(1..4)) OF
+-               RegionalExtension {{REGION.Reg-RoadSegment}} OPTIONAL,
++               RegionalExtension {{Reg-RoadSegment}} OPTIONAL,
+    ...
+    }
+ 
+@@ -1991,7 +1999,7 @@
+                   -- normal operation.
+ 
+    regional       SEQUENCE (SIZE(1..4)) OF
+-                  RegionalExtension {{REGION.Reg-SignalRequestPackage}} OPTIONAL,
++                  RegionalExtension {{Reg-SignalRequestPackage}} OPTIONAL,
+    ...
+    }
+ 
+@@ -2016,7 +2024,7 @@
+                  -- the values zero is used to indicate
+                  -- intent to stop within the intersection
+    regional      SEQUENCE (SIZE(1..4)) OF
+-                 RegionalExtension {{REGION.Reg-SignalRequest}} OPTIONAL,
++                 RegionalExtension {{Reg-SignalRequest}} OPTIONAL,
+    ...
+    }
+ 
+@@ -2042,7 +2050,7 @@
+                 -- Status of request, this may include rejection
+ 
+    regional     SEQUENCE (SIZE(1..4)) OF
+-                RegionalExtension {{REGION.Reg-SignalStatusPackage}} OPTIONAL,
++                RegionalExtension {{Reg-SignalStatusPackage}} OPTIONAL,
+    ...
+    }
+ 
+@@ -2063,7 +2071,7 @@
+                   -- requests which are denied are also listed
+                   -- here for a short period of time
+    regional       SEQUENCE (SIZE(1..4)) OF
+-                  RegionalExtension {{REGION.Reg-SignalStatus}} OPTIONAL,
++                  RegionalExtension {{Reg-SignalStatus}} OPTIONAL,
+    ...
+    }
+ 
+@@ -2162,7 +2170,7 @@
+    theRTCM          RTCMPackage              OPTIONAL,
+ 
+    regional  SEQUENCE (SIZE(1..4)) OF
+-             RegionalExtension {{REGION.Reg-SupplementalVehicleExtensions}} OPTIONAL,
++             RegionalExtension {{Reg-SupplementalVehicleExtensions}} OPTIONAL,
+    ...
+ 
+    }
+@@ -2337,7 +2345,7 @@
+    fuelType        FuelType OPTIONAL,
+ 
+    regional        SEQUENCE (SIZE(1..4)) OF
+-                   RegionalExtension {{REGION.Reg-VehicleClassification}} OPTIONAL,
++                   RegionalExtension {{Reg-VehicleClassification}} OPTIONAL,
+    ...
+    }
+ 
+@@ -2495,7 +2503,7 @@
+    offset5         VertOffset-B11,  -- with a range of +- 102.3 meters vertical
+    offset6         VertOffset-B12,  -- with a range of +- 204.7 meters vertical
+    elevation       Elevation,       -- with a range of -409.5 to + 6143.9 meters
+-   regional        RegionalExtension {{REGION.Reg-VerticalOffset}}
++   regional        RegionalExtension {{Reg-VerticalOffset}}
+                                     -- offset which follows is of a
+                                     -- regional definition type
+    }
+@@ -4872,7 +4880,7 @@
+    -- frame implies a 1:1 zoom
+ 
+ 
+-END
++-- END
+ -- end of the DSRC module.
+ 
+ 
+@@ -4889,7 +4897,7 @@
+ --
+ -- ^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-
+ 
+-REGION DEFINITIONS AUTOMATIC TAGS::= BEGIN
++-- REGION DEFINITIONS AUTOMATIC TAGS::= BEGIN
+ 
+ -- -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+ --
+@@ -4901,66 +4909,66 @@
+ --
+ -- Regional data frames with no currently defined extensions
+ --
+-Reg-AdvisorySpeed         DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-ComputedLane          DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-EventDescription      DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-GenericLane           DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-GeographicalPath      DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-GeometricProjection   DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-IntersectionGeometry  DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-LaneAttributes        DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-MovementState         DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-NodeAttributeSetLL    DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-NodeAttributeSetXY    DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-NodeOffsetPointLL     DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-RequestorDescription  DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-RequestorType         DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-RoadSegment           DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-SignalControlZone     DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-SignalRequest         DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-SignalRequestPackage  DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-SignalStatus          DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-SignalStatusPackage   DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-SupplementalVehicleExtensions DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-VehicleClassification DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
+-Reg-VerticalOffset        DSRC.REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-AdvisorySpeed         REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-ComputedLane          REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-EventDescription      REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-GenericLane           REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-GeographicalPath      REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-GeometricProjection   REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-IntersectionGeometry  REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-LaneAttributes        REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-MovementState         REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-NodeAttributeSetLL    REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-NodeAttributeSetXY    REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-NodeOffsetPointLL     REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-RequestorDescription  REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-RequestorType         REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-RoadSegment           REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-SignalControlZone     REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-SignalRequest         REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-SignalRequestPackage  REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-SignalStatus          REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-SignalStatusPackage   REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-SupplementalVehicleExtensions REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-VehicleClassification REG-EXT-ID-AND-TYPE ::= { ...  }
++Reg-VerticalOffset        REG-EXT-ID-AND-TYPE ::= { ...  }
+ 
+ --
+ -- Data Frames with current adopted expansion point content
+ --
+-Reg-ConnectionManeuverAssist DSRC.REG-EXT-ID-AND-TYPE ::= {
+-   { AddGrpC.ConnectionManeuverAssist-addGrpC IDENTIFIED BY DSRC.addGrpC} ,
++Reg-ConnectionManeuverAssist REG-EXT-ID-AND-TYPE ::= {
++   { AddGrpC.ConnectionManeuverAssist-addGrpC IDENTIFIED BY addGrpC} ,
+    ...
+    }
+ 
+-Reg-IntersectionState     DSRC.REG-EXT-ID-AND-TYPE ::= {
+-   { AddGrpC.IntersectionState-addGrpC IDENTIFIED BY DSRC.addGrpC} ,
++Reg-IntersectionState     REG-EXT-ID-AND-TYPE ::= {
++   { AddGrpC.IntersectionState-addGrpC IDENTIFIED BY addGrpC} ,
+    ...
+    }
+ 
+-Reg-LaneDataAttribute     DSRC.REG-EXT-ID-AND-TYPE ::= {
+-   { AddGrpB.LaneDataAttribute-addGrpB IDENTIFIED BY DSRC.addGrpB} ,
++Reg-LaneDataAttribute     REG-EXT-ID-AND-TYPE ::= {
++   { AddGrpB.LaneDataAttribute-addGrpB IDENTIFIED BY addGrpB} ,
+    ...
+    }
+ 
+-Reg-MovementEvent         DSRC.REG-EXT-ID-AND-TYPE ::= {
+-   { AddGrpB.MovementEvent-addGrpB IDENTIFIED BY DSRC.addGrpB} ,
++Reg-MovementEvent         REG-EXT-ID-AND-TYPE ::= {
++   { AddGrpB.MovementEvent-addGrpB IDENTIFIED BY addGrpB} ,
+    ...
+    }
+ 
+-Reg-NodeOffsetPointXY     DSRC.REG-EXT-ID-AND-TYPE ::= {
+-   { AddGrpB.NodeOffsetPointXY-addGrpB IDENTIFIED BY DSRC.addGrpB} ,
++Reg-NodeOffsetPointXY     REG-EXT-ID-AND-TYPE ::= {
++   { AddGrpB.NodeOffsetPointXY-addGrpB IDENTIFIED BY addGrpB} ,
+    ...
+    }
+ 
+-Reg-Position3D            DSRC.REG-EXT-ID-AND-TYPE ::= {
+-   { AddGrpB.Position3D-addGrpB IDENTIFIED BY DSRC.addGrpB} |
+-   { AddGrpC.Position3D-addGrpC IDENTIFIED BY DSRC.addGrpC} ,
++Reg-Position3D            REG-EXT-ID-AND-TYPE ::= {
++   { AddGrpB.Position3D-addGrpB IDENTIFIED BY addGrpB} |
++   { AddGrpC.Position3D-addGrpC IDENTIFIED BY addGrpC} ,
+    ...
+    }
+ 
+-Reg-RestrictionUserType   DSRC.REG-EXT-ID-AND-TYPE ::= {
+-   { AddGrpC.RestrictionUserType-addGrpC IDENTIFIED BY DSRC.addGrpC} ,
++Reg-RestrictionUserType   REG-EXT-ID-AND-TYPE ::= {
++   { AddGrpC.RestrictionUserType-addGrpC IDENTIFIED BY addGrpC} ,
+    ...
+    }
+ 
+@@ -4977,11 +4985,11 @@
+ -- region was being used (these IDs are defined in the DSRC module)
+ -- refer to the full standard for additional details
+ --
+---Reg-XXX DSRC.REG-EXT-ID-AND-TYPE ::= {
++--Reg-XXX REG-EXT-ID-AND-TYPE ::= {
+ --   { XXX-RegionName IDENTIFIED BY regionName  },
+ --   ...
+ --}
+---regionName DSRC.RegionId ::= 128
++--regionName RegionId ::= 128
+ --XXX-RegionName ::= SEQUENCE { ... }
+ --
+ -- End example pattern for regional use
+@@ -4989,51 +4997,53 @@
+ 
+ -- Extension markers for operational messages in the standard
+ -- Messages with no currently defined extensions
+-Reg-BasicSafetyMessage     DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-CommonSafetyRequest    DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-EmergencyVehicleAlert  DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-IntersectionCollision  DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-NMEAcorrections        DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-ProbeDataManagement    DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-ProbeVehicleData       DSRC.REG-EXT-ID-AND-TYPE ::= {
+-   { AddGrpD.PVD-addGrpD IDENTIFIED BY DSRC.addGrpD},  -- CITS 20170814
++Reg-BasicSafetyMessage     REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-CommonSafetyRequest    REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-EmergencyVehicleAlert  REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-IntersectionCollision  REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-NMEAcorrections        REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-ProbeDataManagement    REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-ProbeVehicleData       REG-EXT-ID-AND-TYPE ::= {
++   { AddGrpD.PVD-addGrpD IDENTIFIED BY addGrpD} |  -- CITS 20170814
++   { AddGrpD.PVD-addGrpD IDENTIFIED BY addGrpD},  -- CITS 20170814
+    ...
+     }
+-Reg-RoadSideAlert          DSRC.REG-EXT-ID-AND-TYPE ::= {
+-   { AddGrpD.RSA-addGrpD IDENTIFIED BY DSRC.addGrpD},  -- CITS 20170814
++Reg-RoadSideAlert          REG-EXT-ID-AND-TYPE ::= {
++   { AddGrpD.RSA-addGrpD IDENTIFIED BY addGrpD} |  -- CITS 20170814
++   { AddGrpD.RSA-addGrpD IDENTIFIED BY addGrpD},  -- CITS 20170814
+    ...
+  }
+-Reg-RTCMcorrections        DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-SignalRequestMessage   DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-SignalStatusMessage    DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-SPAT                   DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-TravelerInformation    DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-PersonalSafetyMessage  DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-RTCMcorrections        REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-SignalRequestMessage   REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-SignalStatusMessage    REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-SPAT                   REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-TravelerInformation    REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-PersonalSafetyMessage  REG-EXT-ID-AND-TYPE ::= { ... }
+ 
+ -- Messages with current adopted extension marker content
+-Reg-MapData                DSRC.REG-EXT-ID-AND-TYPE ::= {
+-   { AddGrpC.MapData-addGrpC IDENTIFIED BY DSRC.addGrpC},
++Reg-MapData                REG-EXT-ID-AND-TYPE ::= {
++   { AddGrpC.MapData-addGrpC IDENTIFIED BY addGrpC},
+    ...
+    }
+ 
+ 
+ -- Test Messages
+-Reg-TestMessage00    DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-TestMessage01    DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-TestMessage02    DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-TestMessage03    DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-TestMessage04    DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-TestMessage05    DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-TestMessage06    DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-TestMessage07    DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-TestMessage08    DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-TestMessage09    DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-TestMessage10    DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-TestMessage11    DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-TestMessage12    DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-TestMessage13    DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-TestMessage14    DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
+-Reg-TestMessage15    DSRC.REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-TestMessage00    REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-TestMessage01    REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-TestMessage02    REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-TestMessage03    REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-TestMessage04    REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-TestMessage05    REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-TestMessage06    REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-TestMessage07    REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-TestMessage08    REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-TestMessage09    REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-TestMessage10    REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-TestMessage11    REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-TestMessage12    REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-TestMessage13    REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-TestMessage14    REG-EXT-ID-AND-TYPE ::= { ... }
++Reg-TestMessage15    REG-EXT-ID-AND-TYPE ::= { ... }
+ 
+ 
+ 

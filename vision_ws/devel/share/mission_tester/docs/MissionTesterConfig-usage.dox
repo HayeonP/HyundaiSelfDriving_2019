@@ -1,0 +1,11 @@
+\subsubsection usage Usage
+\verbatim
+<node name="mission_tester" pkg="mission_tester" type="mission_tester">
+  <param name="Mission" type="int" value="1" />
+  <param name="pedestrian_STOP_distance_threshold" type="double" value="5.0" />
+  <param name="pedestrian_RIGHT_distance_threshold" type="double" value="5.0" />
+  <param name="pedestrian_LEFT_distance_threshold" type="double" value="-5.0" />
+  <param name="spat_wait_threshold" type="double" value="5.0" />
+</node>
+\endverbatim
+

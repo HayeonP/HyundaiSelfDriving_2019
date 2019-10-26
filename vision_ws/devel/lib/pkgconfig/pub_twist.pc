@@ -1,0 +1,8 @@
+prefix=/home/autoware/vision_ws/devel
+
+Name: pub_twist
+Description: Description of pub_twist
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/autoware/vision_ws/devel/lib 
+Requires: 

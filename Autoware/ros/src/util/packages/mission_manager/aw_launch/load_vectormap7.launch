@@ -1,0 +1,4 @@
+<launch>
+      <!-- Vector Map -->
+      <node pkg="map_file" type="vector_map_loader" name="vector_map_loader" args="$(find mission_manager)/aw_vectormap/7/dtlane.csv $(find mission_manager)/aw_vectormap/7/idx.csv $(find mission_manager)/aw_vectormap/7/lane.csv $(find mission_manager)/aw_vectormap/7/node.csv $(find mission_manager)/aw_vectormap/7/point.csv" />
+</launch>

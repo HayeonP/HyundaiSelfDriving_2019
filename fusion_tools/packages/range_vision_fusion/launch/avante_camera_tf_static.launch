@@ -1,7 +1,0 @@
-
-<launch>
-    <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" 
-        args="-0.10173055 0.0372791053078 0.979367606076 
-          -0.399669836322 0.400599301056 -0.586227776673
-        0.579759618966 camera velodyne 100" />
-</launch>

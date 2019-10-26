@@ -1,0 +1,282 @@
+#include "mission_manager/mission_manager.h"
+
+namespace mManagerNS
+{ 
+
+ mManager::mManager()
+ {
+	bVMap = false;//enable when loading vector map.
+	bMatching = false;//enable when starting mm, disable when localizing completely.
+	bGplan = false;//enable when localizing completely, disable after global planning completely.
+	bLplan = false;//enable when localizing completely, disable after global planning completely.
+	bkill = false;//enable when killing nodes.
+	vertex[4] = 0;
+	missionNo = 1;
+	profileNo = 1;
+	seqno = 0;
+	pub_initial_pose = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("/initialpose", 10);
+	pub_goal_polygon = nh.advertise<geometry_msgs::PolygonStamped>("/goal_polygon", 10);
+	pub_goal_pose = nh.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 10);
+	pub_prof_vel = nh.advertise<std_msgs::Float32>("/mission_manager_maxvel", 10);
+	pub_prof_polygon = nh.advertise<geometry_msgs::PolygonStamped>("/prof_polygon", 10);
+	sub_current_pose = nh.subscribe("/current_pose", 10, &mManager::callbackGetCurrentPose, this);
+	sub_vector_map_stat = nh.subscribe("/vector_map_loader_ok", 10, &mManager::callbackManageVectorMapStat, this);
+	sub_points_map_stat = nh.subscribe("/points_map_loader_ok", 10, &mManager::callbackManagePointsMapStat, this);
+	sub_matching_stat = nh.subscribe("/ndt_matching_ok", 10, &mManager::callbackManageMatchingStat, this);
+	sub_gplanning_stat = nh.subscribe("/op_global_planner_ok", 10, &mManager::callbackManageGPlanningStat, this);
+	sub_lplanning_stat = nh.subscribe("/pure_pursuit_ok", 10, &mManager::callbackManageLPlanningStat, this);
+	initialpose_msg.header.frame_id = "map";
+	initialpose_msg.pose.pose.position.z = 0;
+	initialpose_msg.pose.pose.orientation.x = 0;
+	initialpose_msg.pose.pose.orientation.y = 0;
+	goalpose_msg.header.frame_id = "map";
+	goalpose_msg.pose.position.z = 0;
+	goalpose_msg.pose.orientation.x = 0;
+	goalpose_msg.pose.orientation.y = 0;
+	
+ 	goalpolygon_msg.header.frame_id = "world";
+ 	goalpolygon_msg.polygon.points.resize(4);
+ }
+
+ mManager::~mManager()
+ {
+ }
+
+ void mManager::cleanup()
+ {
+	//shutdown script
+	int stat = system("/home/autoware/Autoware/ros/src/util/packages/mission_manager/script/shutdown");
+	//find pid script
+	FILE *fp = NULL;
+	char filename[NODECNT][1024] = {"pure_pursuit","vel_relay", "pose_relay", "twist_filter", "wf_simulator", "op_behavior_selector", "op_trajectory_evaluator", "op_trajectory_generator", "op_common_params", "op_global_planner"};
+	char command[1024] = "/home/autoware/Autoware/ros/src/util/packages/mission_manager/script/find_pid ";
+	char* cmd_ptr;
+	char line[1024];
+	int pid;
+
+	for(int i = 0; i< NODECNT; i++)
+	{
+		cout << filename[i] <<endl;
+		cmd_ptr = strcat(command, filename[i]);
+		if((fp = popen(cmd_ptr, "r")) == NULL){
+			ROS_ERROR("Can't open pipe {find_pid}");
+			return ;
+		}
+		bkill = true;
+		while(bkill)
+		{
+			bkill = false;
+			while(fgets(line, 1024, fp) != NULL)
+			{
+				printf("%s", line);
+			}
+			if( strcmp(line, "None\n") != 0)
+			{
+				ROS_WARN("%s : not killed yet, killing..",filename[i]);
+				bkill = true;
+				pid = atoi(line);
+				kill(pid, 9);
+			}
+		}
+		pclose(fp); 
+	}
+ }
+
+
+ void mManager::MatchProfilingArea(double* curr)
+ {
+	int margin = 5;
+	double pos_x, pos_y;
+	
+	pos_x = prof_pose[profileNo - 1][0];
+	pos_y = prof_pose[profileNo - 1][1];
+	
+	int lu_x = pos_x - margin;
+	int lu_y = pos_y - margin;
+	int rd_x = pos_x + margin;
+	int rd_y = pos_y + margin;
+	int z = 0.988161278591;
+	
+	bool bNeedProf = (lu_x) <= curr[0] 
+		    && (rd_x) >= curr[0] 
+		    && (lu_y) <= curr[1]
+	 	    && (rd_y) >= curr[1];
+	
+	profpolygon_msg.polygon.points[0].x = lu_x;
+	profpolygon_msg.polygon.points[0].y = rd_y;
+	profpolygon_msg.polygon.points[0].z = z;
+ 	profpolygon_msg.polygon.points[1].x = lu_x;
+	profpolygon_msg.polygon.points[1].y = lu_y;
+	profpolygon_msg.polygon.points[1].z = z;
+	profpolygon_msg.polygon.points[2].x = rd_x;
+	profpolygon_msg.polygon.points[2].y = lu_y;
+	profpolygon_msg.polygon.points[2].z = z;
+	profpolygon_msg.polygon.points[3].x = rd_x;
+	profpolygon_msg.polygon.points[3].y = rd_y;
+	profpolygon_msg.polygon.points[3].z = z;
+
+	pub_prof_polygon.publish(profpolygon_msg);
+
+	if(bNeedProf)
+	{
+		if(profileNo != MAX_PF)
+		{
+		  profvel_msg.data = prof_vel[profileNo-1];
+		  pub_prof_vel.publish(profvel_msg);
+		}
+		bNeedProf = false;
+		profileNo++;
+	}
+ }
+
+ void mManager::MatchMissionGoalArea(double* curr)
+ {
+	int margin = 10;
+	double cur_goal_x, cur_goal_y;
+	if(missionNo > MAX_MISSION)
+	{
+		cout<<"end!!"<<endl;
+		cleanup();
+		exit(0);
+	}
+	cur_goal_x = goal_pose[missionNo - 1][0];
+	cur_goal_y = goal_pose[missionNo - 1][1];
+	
+	int lu_x = cur_goal_x - margin;
+	int lu_y = cur_goal_y - margin;
+	int rd_x = cur_goal_x + margin;
+	int rd_y = cur_goal_y + margin;
+	int z = 0.988161278591;
+	
+	bool bIsGoal = (lu_x) <= curr[0] 
+		    && (rd_x) >= curr[0] 
+		    && (lu_y) <= curr[1]
+	 	    && (rd_y) >= curr[1];
+	
+	goalpolygon_msg.polygon.points[0].x = lu_x;
+	goalpolygon_msg.polygon.points[0].y = rd_y;
+	goalpolygon_msg.polygon.points[0].z = z;
+ 	goalpolygon_msg.polygon.points[1].x = lu_x;
+	goalpolygon_msg.polygon.points[1].y = lu_y;
+	goalpolygon_msg.polygon.points[1].z = z;
+	goalpolygon_msg.polygon.points[2].x = rd_x;
+	goalpolygon_msg.polygon.points[2].y = lu_y;
+	goalpolygon_msg.polygon.points[2].z = z;
+	goalpolygon_msg.polygon.points[3].x = rd_x;
+	goalpolygon_msg.polygon.points[3].y = rd_y;
+	goalpolygon_msg.polygon.points[3].z = z;
+
+	pub_goal_polygon.publish(goalpolygon_msg);
+	if(bIsGoal)
+	{
+		if(missionNo != MAX_MISSION)
+		{
+		 double* goal = goal_pose[missionNo];
+		 settingPoseMsg(curr, goal);
+		 bMatching = true;
+		 cleanup();
+		}
+		bIsGoal = false;
+		missionNo++;
+	}
+ }
+
+ void mManager::settingPoseMsg(double* init, double* goal)
+ {
+	initialpose_msg.pose.pose.position.x = init[0];
+	initialpose_msg.pose.pose.position.y = init[1];
+	initialpose_msg.pose.pose.orientation.z = init[2];
+	initialpose_msg.pose.pose.orientation.w = init[3];
+ 
+	goalpose_msg.pose.position.x = goal[0];
+	goalpose_msg.pose.position.y = goal[1];
+	goalpose_msg.pose.orientation.z = goal[2];
+	goalpose_msg.pose.orientation.w = goal[3];
+ }
+
+ void mManager::callbackManageVectorMapStat(const std_msgs::BoolConstPtr& msg)
+ {
+	if(msg->data)
+	{
+		ROS_WARN("[VectorMap] : OK");
+		bVMap = true;
+	}
+	else
+		ROS_WARN("[VectorMap] : NOT OK");
+		
+ }
+ void mManager::callbackManagePointsMapStat(const std_msgs::BoolConstPtr& msg)
+ {
+	if(msg->data)
+	{
+		ROS_WARN("[PointsMap] : OK");
+		bMatching = true;
+	}
+	else
+		ROS_WARN("[PointsMap] : NOT OK");
+ }
+ void mManager::callbackManageMatchingStat(const std_msgs::BoolConstPtr& msg)
+ {
+	 if(bMatching)
+	 {
+		 if(msg->data)
+		 {
+			ROS_WARN("[Matching] : OK");
+			bMatching = false;
+			bGplan = true;
+			system("roslaunch mission_manager mm_mission_planning.launch &");//global planning
+		 }
+		 else
+			ROS_WARN("[Matching] : NOT OK");
+	 }
+ }
+ void mManager::callbackManageGPlanningStat(const std_msgs::BoolConstPtr& msg)
+ {
+	 if(bGplan && bVMap)
+	 {
+		 if(msg->data)
+		 {
+			ROS_WARN("[GlobalPlanner] : OK");
+			system("roslaunch mission_manager mm_motion_planning.launch &");//local planning
+			bGplan = false;
+			bLplan = true;
+		 }
+		 else
+		{
+			pub_initial_pose.publish(initialpose_msg); //when you drive in road, disable this line
+		 	pub_goal_pose.publish(goalpose_msg);
+			ROS_WARN("[GlobalPlanning] : NOT OK");
+		}
+	 }
+
+ }
+ void mManager::callbackManageLPlanningStat(const std_msgs::BoolConstPtr& msg)
+ {
+	 if(bLplan)	
+	 {
+		 if(msg->data)
+			{
+				ROS_WARN("[LocalPlanner] : OK");
+				bLplan = false;
+			}
+		 else
+			ROS_WARN("[LocalPlanner] : NOT OK");
+	 }
+ }
+ void mManager::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
+ {
+	double goalPose[4];
+	double cur_pose[4] = {msg->pose.position.x, msg->pose.position.y, msg->pose.orientation.z, msg->pose.orientation.w};
+
+	MatchMissionGoalArea(cur_pose);
+	MatchProfilingArea(cur_pose);
+ }
+ void mManager::MainLoop()
+ {
+	ros::Rate loop_rate(10);
+	settingPoseMsg(init_pose, goal_pose[0]);
+	cleanup();
+	ros::spin();
+	return;
+ }
+}

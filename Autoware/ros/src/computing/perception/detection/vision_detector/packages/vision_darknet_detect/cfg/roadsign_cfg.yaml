@@ -1,0 +1,11 @@
+roadsign_darknet_detect:
+  gpu_device_id: 0
+  score_threshold: 0.3
+  nms_threshold: 0.3
+  network_definition_file: "/home/vision_work/YOLO/darknet/cfg/roadsign-416.cfg"
+  pretrained_model_file: "/home/vision_work/YOLO/darknet/weights/roadsign-416-hyundai-4.weights"
+  names_file: "/home/vision_work/YOLO/darknet/data/roadsigns.names"
+  ann_path: "/home/vision_work/SelfDriving/file/annfileishere2.yml"
+  camera_id: "/"
+  resize_ratio: 1.0
+  image_raw_node: "/vision_test"

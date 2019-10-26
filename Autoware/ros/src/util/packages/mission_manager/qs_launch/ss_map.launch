@@ -1,0 +1,19 @@
+<launch>
+
+  <!-- TF -->
+  <include file="$(find mission_manager)/now_hyo/tf.launch"/>
+
+  <!-- SOONGSIL Map
+  <node pkg="map_file" type="vector_map_loader" name="vector_map_loader" args="$(find mission_manager)/now_hyo/soongsil_half/dtlane.csv $(find mission_manager)/now_hyo/soongsil_half/idx.csv $(find mission_manager)/now_hyo/soongsil_half/lane.csv $(find mission_manager)/now_hyo/soongsil_half/node.csv $(find mission_manager)/now_hyo/soongsil_half/point.csv" />
+  <node pkg="map_file" type="points_map_loader" name="points_map_loader" args="noupdate $(find mission_manager)/now_hyo/soongsil_fullmap_fast_binary.pcd" />
+
+  -->
+  
+  <!-- KCITY Map 
+  --> 
+  <node pkg="map_file" type="vector_map_loader" name="vector_map_loader" args="/home/autoware/shared_dir/map/vectormap/soongsil_half/dtlane.csv /home/autoware/shared_dir/map/vectormap/soongsil_half/idx.csv /home/autoware/shared_dir/map/vectormap/soongsil_half/lane.csv /home/autoware/shared_dir/map/vectormap/soongsil_half/node.csv /home/autoware/shared_dir/map/vectormap/soongsil_half/point.csv" />
+  <node pkg="map_file" type="points_map_loader" name="points_map_loader" args="noupdate /home/autoware/shared_dir/map/pointmap/20190507_soongsil_0.2.pcd" />
+
+  <!--include file="$(find avoid_workzone_avc)/launch/avoid_workzone.launch"/-->
+
+</launch>

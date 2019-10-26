@@ -1,0 +1,2 @@
+avc_launch:object_manager:object_manager_msgs:pcl_convexhull:polygon_collector:pub_twist:twist_comparator:v2x/parser:v2x/v2x_msgs:v2x_object_detect
+-DCATKIN_DEVEL_PREFIX=/home/autoware/vision_ws/devel -DCMAKE_INSTALL_PREFIX=/home/autoware/vision_ws/install -G Unix Makefiles

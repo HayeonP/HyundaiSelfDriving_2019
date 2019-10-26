@@ -1,0 +1,10 @@
+<launch>
+  <!--runnig mission_manager-->
+  <node name="mission_manager" pkg="mission_manager" type="mission_manager" output="screen"/>  
+
+  <!-- launch map -->
+  <include file="$(find mission_manager)/qs_launch/ds_map.launch"/>
+  <!-- localizing -->
+  <include file="$(find mission_manager)/qs_launch/ds_localization.launch"/>
+  
+</launch>

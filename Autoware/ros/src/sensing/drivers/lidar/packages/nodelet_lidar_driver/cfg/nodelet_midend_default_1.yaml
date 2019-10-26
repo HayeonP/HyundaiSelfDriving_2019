@@ -1,0 +1,3 @@
+pub_topic: "points_raw"
+# pub_topic: "vlp1/points_raw"
+sub_topic: "front/lidar_msg"

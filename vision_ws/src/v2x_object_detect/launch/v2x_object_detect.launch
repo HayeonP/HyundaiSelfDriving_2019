@@ -1,0 +1,8 @@
+<launch>
+    <!--<node pkg="rviz" type="rviz" name="rviz" />-->
+    <node pkg="v2x_object_detect" type="v2x_processor_main" name="v2x_processor_main" output="screen"/>
+    <rosparam command="load" file="$(find v2x_object_detect)/cfg/object_detect_parameters.cfg" />
+    <!--<rosparam command="load" file="$(find v2x_object_detect)/cfg/object_detect_parameters_soongsil.cfg" />-->
+    <node pkg="parser" type="v2x_main" name="v2x_main" />
+    <!--output="screen"/>-->
+</launch>

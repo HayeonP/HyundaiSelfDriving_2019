@@ -1,0 +1,8 @@
+prefix=/home/autoware/vision_ws/devel
+
+Name: pcl_convexhull
+Description: Description of pcl_convexhull
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/autoware/vision_ws/devel/lib 
+Requires: 

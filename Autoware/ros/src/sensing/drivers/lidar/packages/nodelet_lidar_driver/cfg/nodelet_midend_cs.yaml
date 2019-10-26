@@ -1,0 +1,4 @@
+cs_mode: 1
+angle : 30
+pub_topic: "points_raw_cs"
+sub_topic: "front/lidar_msg"

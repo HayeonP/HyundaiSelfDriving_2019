@@ -1,0 +1,8 @@
+prefix=/home/autoware/vision_ws/devel
+
+Name: v2x_msgs
+Description: Description of v2x_msgs
+Version: 0.0.0
+Cflags: -I/home/autoware/vision_ws/devel/include
+Libs: -L/home/autoware/vision_ws/devel/lib 
+Requires: message_runtime

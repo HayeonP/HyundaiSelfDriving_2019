@@ -1,0 +1,20 @@
+<launch>
+	<arg name="radius_inner" default="2.5"/>
+	<arg name="radius_outer" default="5.0"/>
+	<arg name="gnss_threshold" default="5.0"/>
+	<arg name="score_threshold" default="2.5"/>
+	<arg name="dtlane_threshold" default="10.0"/>
+	<arg name="rsample_num" default="10"/>
+	<arg name="ignore_count" default="10"/>
+
+	<node name ="startpos_setter" pkg="startpos_setter" type="startpos_setter" output="screen">
+		<param name="radius_inner" value="$(arg radius_inner)"/>
+		<param name="radius_outer" value="$(arg radius_outer)"/>
+		<param name="gnss_threshold" value="$(arg gnss_threshold)"/>
+		<param name="score_threshold" value="$(arg score_threshold)"/>
+		<param name="dtlane_threshold" value="$(arg dtlane_threshold)"/>
+		<param name="rsample_num" value="$(arg rsample_num)"/>
+		<param name="ignore_count" value="$(arg ignore_count)"/>
+
+	</node>
+</launch>

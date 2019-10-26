@@ -1,0 +1,13 @@
+\subsubsection parameters ROS parameters
+
+Reads and maintains the following parameters on the ROS server
+
+- \b "~vision_flg" : \b [bool] Debug : A Vision Fused Objects Flag min: False, default: True, max: True
+- \b "~spat_flg" : \b [bool] Debug : A SPaT Flag min: False, default: True, max: True
+- \b "~AMB_flg" : \b [bool] Debug : A AMB Flag min: False, default: True, max: True
+- \b "~pedestrian_STOP_distance_threshold" : \b [double] Stop distacne threshold min: 0.0, default: 30.0, max: 30.0
+- \b "~pedestrian_LEFT_distance_threshold" : \b [double] Left distacne threshold min: 0.0, default: 4.55, max: 10.0
+- \b "~pedestrian_RIGHT_distance_threshold" : \b [double] Right distacne threshold min: -10.0, default: -0.9, max: 0.0
+- \b "~spat_wait_threshold" : \b [double] spat_wait_threshold min: 0.0, default: 2.0, max: 30.0
+- \b "~force_emergency_vehicle_avoidance" : \b [bool] force emergency car avoidance min: False, default: False, max: True
+

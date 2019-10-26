@@ -1,0 +1,8 @@
+prefix=/home/autoware/vision_ws/devel
+
+Name: polygon_collector
+Description: Description of polygon_collector
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/autoware/vision_ws/devel/lib 
+Requires: 

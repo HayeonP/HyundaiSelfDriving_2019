@@ -1,0 +1,30 @@
+<launch>
+
+  <!-- local planner -->
+  <arg name = "cfg_path" default="$(find mission_manager)/cfg/vision_motion_planning.yaml"/>
+
+  <include file="$(find op_local_planner)/launch/op_trajectory_generator.launch"/>
+  <include file="$(find op_local_planner)/launch/op_motion_predictor.launch"/>
+  <include file="$(find op_local_planner)/launch/op_trajectory_evaluator.launch"/>
+  <include file="$(find op_local_planner)/launch/op_behavior_selector.launch"/>
+  
+  <rosparam command="load" file="$(arg cfg_path)"/>
+  
+  <!--setting pure_pursuit -->
+  <node pkg="rostopic" type="rostopic" name="config_waypoint_follower_rostopic"
+        args="pub /config/waypoint_follower autoware_config_msgs/ConfigWaypointFollower
+              '{ header: auto, 
+		param_flag: 0, 
+		velocity: 5.0, 
+		lookahead_distance: 4.0, 
+		lookahead_ratio: 2.0, 
+		minimum_lookahead_distance: 6.0, }' "
+  />
+
+  <!--runnig pure_pursuit-->
+  <include file="$(find waypoint_follower)/launch/pure_pursuit.launch"/>
+
+  <!-- twist_filter -->
+  <include file="$(find waypoint_follower)/launch/twist_filter.launch"/>
+
+</launch>

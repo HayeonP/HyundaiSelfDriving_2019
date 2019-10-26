@@ -1,0 +1,3 @@
+calibration_path: "/home/autoware/Autoware/ros/src/sensing/drivers/lidar/packages/nodelet_lidar_driver/cfg/VLP16db.yaml"
+frame: "velodyne"
+batchNum: 64

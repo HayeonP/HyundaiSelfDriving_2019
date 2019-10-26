@@ -1,0 +1,145 @@
+
+// NEW!
+
+/*
+ * Copyright 2018-2019 Autoware Foundation. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ********************
+ *  v1.0: amc-nu (abrahammonrroy@yahoo.com)
+ *
+ * yolo3_node.cpp
+ *
+ *  Created on: April 4th, 2018
+ */
+#ifndef DARKNET_YOLO3_H
+#define DARKNET_YOLO3_H
+
+#define __APP_NAME__ "vision_darknet_detect"
+
+#include <fstream>
+#include <cstdint>
+#include <cstdlib>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <iostream>
+#include <mutex>
+
+#include <image_transport/image_transport.h>
+#include <sensor_msgs/image_encodings.h>
+
+#include <cv_bridge/cv_bridge.h>
+
+#include <autoware_config_msgs/ConfigSSD.h>
+#include <autoware_msgs/DetectedObject.h>
+#include <autoware_msgs/DetectedObjectArray.h>
+
+#include <icthus_class_score.h>
+
+#include <opencv2/opencv.hpp>
+
+extern "C"
+{
+#undef __cplusplus
+#include "box.h"
+#include "image.h"
+#include "network.h"
+#include "detection_layer.h"
+#include "parser.h"
+#include "region_layer.h"
+#include "utils.h"
+#include "image.h"
+#define __cplusplus
+}
+
+#include <number_detector.h>
+#include <traffic_sign_classifier.h>
+
+namespace darknet {
+    class Yolo3Detector {
+    private:
+        double min_confidence_, nms_threshold_;
+        network* darknet_network_;
+        std::vector<box> darknet_boxes_;
+        std::vector<IcthusClassScore<float> > forward(image &in_darknet_image);
+    public:
+        Yolo3Detector() {}
+
+        void load(std::string &in_model_file, std::string &in_trained_file, double in_min_confidence,
+                  double in_nms_threshold);
+
+        ~Yolo3Detector();
+
+        image convert_image(const sensor_msgs::ImageConstPtr &in_image_msg);
+
+        std::vector<IcthusClassScore<float> > detect(image &in_darknet_image);
+
+        uint32_t get_network_width();
+
+        uint32_t get_network_height();
+
+
+    };
+}  // namespace darknet
+
+class Yolo3DetectorNode {
+    ros::Subscriber                 subscriber_left_image_raw_, subscriber_right_image_raw_;;
+    ros::Subscriber                 subscriber_yolo_config_;
+    ros::Publisher                  publisher_left_objects_, publisher_right_objects_;
+    ros::NodeHandle                 node_handle_;
+
+    std::string                     camera_left_id_, camera_right_id_;
+    std::string                     left_in_camera_frame_id_, right_in_camera_frame_id_;
+    std::string                     ann_path_;
+
+    cv::Mat                         left_mat_image_, right_mat_image_;
+    darknet::Yolo3Detector          yolo_detector_;
+    NumberDetector                  number_detector_;
+    TrafficSignClassifier           traffic_sign_classifier_;
+
+    image darknet_image_ = {};
+
+    float                           score_threshold_;
+    float                           nms_threshold_;
+    double                          image_ratio_;//resize ratio used to fit input image to network input size
+    uint32_t                        image_top_bottom_border_;//black strips added to the input image to maintain aspect ratio while resizing it to fit the network input size
+    uint32_t                        image_left_right_border_;
+    std::vector<cv::Scalar>         colors_;
+
+    std::vector<std::string>        custom_names_;
+    bool                            use_coco_names_;
+    sensor_msgs::Image              left_image_message_, right_image_message_;
+
+    void                            convert_rect_to_image_obj(std::vector< IcthusClassScore<float> >& in_objects,
+                                      autoware_msgs::DetectedObjectArray& out_message);
+    void                            rgbgr_image(image& im);
+    image                           convert_ipl_to_image(sensor_msgs::Image& msg);
+    void                            image_callback(const sensor_msgs::ImageConstPtr& in_image_message);
+    void                            config_cb(const autoware_config_msgs::ConfigSSD::ConstPtr& param);
+    std::vector<std::string>        read_custom_names_file(const std::string& in_path);
+    void                            get_roi_mat(cv::Mat& src, std::vector< IcthusClassScore<float> >& objects);
+    
+    void                            number_filtering(std::vector< IcthusClassScore<float> >& objects, std::vector<cv::Mat>& roi_object_vec);
+    void                            traffic_sign_filtering(std::vector< IcthusClassScore<float> >& objects, std::vector<cv::Mat>& roi_object_vec);
+    std::vector<cv::Mat>            get_object_roi_vec(std::vector< IcthusClassScore<float> >& detections, std::string camera_id);
+    int                             label_id_to_speed(int id);
+    unsigned int                    speed_to_label_id(int speed);
+    void                            create_vision_object(sensor_msgs::Image& in_image_message);
+public:
+    void    Run();
+};
+
+#endif  // DARKNET_YOLO3_H
+
+#define SPEED_OFFSET 91

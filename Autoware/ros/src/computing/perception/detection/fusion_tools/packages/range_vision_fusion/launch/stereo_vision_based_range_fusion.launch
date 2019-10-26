@@ -1,0 +1,29 @@
+<launch>
+<arg name="left_detected_objects_vision" default="/detection/image_detector/left_objects" />
+    <arg name="right_detected_objects_vision" default="/detection/image_detector/right_objects" />
+    <arg name="left_camera_name" default="left_camera" />
+    <arg name="right_camera_name" default="right_camera" />
+    <arg name="left_camera_info_src" default="/camera1/camera_info" />
+    <arg name="right_camera_info_src" default="/camera0/camera_info" />
+    <arg name="min_car_dimensions" default="[2,2,4]" />
+    <arg name="min_person_dimensions" default="[1,2,1]" />
+    <arg name="min_truck_dimensions" default="[2,2,4.5]" />
+    <arg name="sync_topics" default="true" />
+    <arg name="lidar_points_raw" default="/points_raw" />
+    <arg name="base_id" default="base_link" />
+
+    <node name="stereo_vision_based_range_fusion" pkg="range_vision_fusion" type="stereo_vision_based_range_fusion" output="screen">
+        <param name="left_detected_objects_vision" value="$(arg left_detected_objects_vision)" />
+        <param name="right_detected_objects_vision" value="$(arg right_detected_objects_vision)" />
+        <param name="left_camera_name" value="$(arg left_camera_name)" />
+        <param name="right_camera_name" value="$(arg right_camera_name)" />
+        <param name="left_camera_info_src" value="$(arg left_camera_info_src)" />
+        <param name="right_camera_info_src" value="$(arg right_camera_info_src)" />
+        <param name="min_car_dimensions" value="$(arg min_car_dimensions)" />
+        <param name="min_person_dimensions" value="$(arg min_person_dimensions)" />
+        <param name="min_truck_dimensions" value="$(arg min_truck_dimensions)" />
+        <param name="sync_topics" value="$(arg sync_topics)" />
+        <param name="lidar_points_raw" value="$(arg lidar_points_raw)" />
+        <param name="base_id" value="$(arg base_id)" />
+    </node>
+</launch>

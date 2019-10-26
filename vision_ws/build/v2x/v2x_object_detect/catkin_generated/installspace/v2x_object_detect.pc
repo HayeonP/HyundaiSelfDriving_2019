@@ -1,0 +1,8 @@
+prefix=/home/autoware/vision_ws/install
+
+Name: v2x_object_detect
+Description: Description of v2x_object_detect
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/autoware/vision_ws/install/lib 
+Requires: 

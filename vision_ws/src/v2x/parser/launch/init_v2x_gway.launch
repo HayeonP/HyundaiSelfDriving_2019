@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="v2x_udpbroadcast2" type="v2x_main" name="v2x_main" output="screen"/>
+    <node pkg="dec_gateway" type="dec_gateway" name="dec_gateway" 
+        args="/dev/pcan-usb/0/can0" output="screen"/>
+</launch>

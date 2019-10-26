@@ -1,0 +1,176 @@
+#pragma once
+#include <object_manager/mission_processor.h>
+#include <geometry_msgs/Polygon.h>
+#include <visualization_msgs/MarkerArray.h>
+#include <object_manager/genAutowareObstacles.h>
+
+constexpr static double MISSION5_VELOCITY_MPH = 8.61;// 31 kph
+
+class EmergencyVehicleProcessor : public MissionProcessor{
+public:
+    EmergencyVehicleProcessor() : private_nh("~"),
+        e_car_poly_gap(0.5)
+    {
+        std::vector<double> section_tmp;
+        if (!private_nh.getParam("emergency_critical_section", section_tmp))
+            throw std::runtime_error("set emergency_critical_section!");
+        
+        section_poly.points.resize(4);
+        for(int i = 0 ; i < 4; ++i){
+            section_poly.points[i].x = section_tmp[2*i];
+            section_poly.points[i].y = section_tmp[2*i + 1];
+        }
+        emergency_car_appeared = false;
+
+        forward_poly.points.resize(4);
+        forward_poly.points[0].x = -87.9761; // pose + 20
+        forward_poly.points[0].y = -15.0982;
+        forward_poly.points[1].x = -75.9417; // +12
+        forward_poly.points[1].y =  -1; 
+        forward_poly.points[2].x = -76.8696; // +11
+        forward_poly.points[2].y = -14.7511; 
+        forward_poly.points[3].x = -80.7025; // +7
+        forward_poly.points[3].y = -16.9747;
+
+        //93.0407, 21.2784, 91.4318, -27.2222, 80.0346, -26.3948, 82.5369, 20.1896
+        deAccel_poly.points.resize(4);
+        deAccel_poly.points[0].x = 93.0407;
+        deAccel_poly.points[0].y = 21.2784;
+        deAccel_poly.points[1].x = 91.4318;
+        deAccel_poly.points[1].y = -27.2222;
+        deAccel_poly.points[2].x = 80.0346;
+        deAccel_poly.points[2].y = -26.3948;
+        deAccel_poly.points[3].x = 82.5369;
+        deAccel_poly.points[3].y = 20.1896;
+        
+
+        bEscapedEmergencyVehicle = false;
+    }
+    void processMission(AVCInterface& avc_interface,
+        const object_manager_msgs::combined msg){
+        // 기술 교류회때 응급차량 테스트시 미션 수행 이후 패트롤에 의한 오작동 발생시 한번만 수행하게 하자.
+        auto& detectedObj = msg.obj_ary;
+        bool processMission = false;
+
+        //40kph 
+        if (bEscapedEmergencyVehicle){
+            double dt = (ros::Time::now() - escape_start_time).toSec();
+            if (dt > 10) {
+                avc_interface.publishGoalSpeed(8.5);
+                bEscapedEmergencyVehicle = false;
+            }
+        }
+
+        //30 kph in box
+        //if (isPointInPolygon(
+        //    avc_interface.getCurpos().pose.position.x, 
+        //    avc_interface.getCurpos().pose.position.y, 
+        //    deAccel_poly)
+        //)   avc_interface.publishGoalSpeed(8.5);
+
+        if (escaped) return;
+
+        for(auto it = detectedObj.objects.begin(); it != detectedObj.objects.end(); ++it){
+            
+            if(it->label == "AMB" && (!emergency_car_appeared)){
+                processMission = true;
+                break;
+            }
+            if(it->label == "car" && emergency_car_appeared && it->convex_hull.polygon.points.size()){
+                
+                processMission = true;
+                break;
+            }
+        }
+        if (!processMission) return;
+        ROS_INFO("e_car_appear!! : %d", emergency_car_appeared);
+        if(!emergency_car_appeared){ // AMB was not detected before            
+            for(auto it = detectedObj.objects.begin(); it != detectedObj.objects.end(); ++it){
+                if(it->label == "AMB" && (-it->pose.position.x <= AMB_start_distance)){
+                    emergency_car_appeared = true;
+                    
+                    double new_x = avc_interface.getCurpos().pose.position.x + 20;
+                    if (new_x < section_poly.points[2].x) {
+                        makeFakebox = true;
+                        section_poly.points[0].x = new_x;
+                        section_poly.points[1].x = new_x;
+
+                        autoware_msgs::DetectedObject obs;
+                        genObstacleMsgFromPolygon(obs, section_poly, 0.5);
+                        avc_interface.setObstacle("AMB", obs);
+                        avc_interface.publishGoalSpeed(6);
+                    }
+                    else makeFakebox = false;
+
+
+                    amb_detected_time = ros::Time::now();
+                    break;
+                }   
+            }
+        }
+        else{ // AMB is located nearby
+            double dt = (ros::Time::now() - amb_detected_time).toSec();
+            if (dt > 5){
+                
+                for(auto it = detectedObj.objects.begin(); it != detectedObj.objects.end(); ++it){                
+                    if( it->label == "car" && it->pose.position.x >= AMB_escape_distance ){
+                        if (!it->convex_hull.polygon.points.size()) break;                        
+                        if (std::fabs(it->pose.position.y) < 7) {
+                            emergency_car_appeared = false;
+
+                            double base_x = avc_interface.getCurpos().pose.position.x + 20;
+                            forward_poly.points[0].x = base_x; // 
+                            forward_poly.points[1].x = base_x + 22; // 
+                            forward_poly.points[2].x = base_x + 11; // 
+                            forward_poly.points[3].x = base_x + 7;  // 
+
+                            avc_interface.eraseObstacle("AMB");
+                            autoware_msgs::DetectedObject obs;
+                            genObstacleMsgFromPolygon(obs, forward_poly, 0.5);
+                            avc_interface.setObstacle("AMB_forward", obs);
+
+                            escape_start_time = ros::Time::now();
+                            bEscapedEmergencyVehicle = true;
+                            escaped = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (emergency_car_appeared){
+            if (makeFakebox){
+                
+            }
+        } else{
+            
+            
+        }
+
+        avc_interface.publish();
+
+    }
+
+    void set_param(object_manager::ObjectManagerConfig &config)
+    {
+    }
+private:
+    ros::Publisher e_vehicle_debug_pub;
+    ros::NodeHandle private_nh, nh;
+
+    geometry_msgs::Polygon section_poly;
+    geometry_msgs::Polygon forward_poly;
+    geometry_msgs::Polygon deAccel_poly;
+
+    double e_car_poly_gap;
+    bool emergency_car_appeared = false;
+    const double AMB_escape_distance = 10.0;
+    const double AMB_start_distance = 10.0;
+    ros::Time amb_detected_time;
+    bool makeFakebox;
+
+    bool bEscapedEmergencyVehicle;
+    ros::Time escape_start_time;
+
+    bool escaped = false;
+};

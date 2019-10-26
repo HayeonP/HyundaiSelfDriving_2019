@@ -1,0 +1,15 @@
+#!/bin/bash
+
+pid_list=`ps -axj | grep $1 | awk -F' ' '{print $2}'`
+
+#echo $pid_list
+
+for pid in $pid_list
+do 
+	cmd=`ps -p $pid | grep $1 | awk -F' ' '{print $4}'`	
+	#echo hhh${cmd}ttt
+	if [ "$cmd" == "$1" ]; then
+		echo "$pid"
+	fi
+done
+

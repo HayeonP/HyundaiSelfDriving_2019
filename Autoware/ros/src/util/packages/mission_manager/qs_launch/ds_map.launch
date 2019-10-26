@@ -1,0 +1,16 @@
+<launch>
+
+  <!-- TF -->
+  <include file="$(find mission_manager)/now_hyo/tf.launch"/>
+
+  <!-- DASAN Left Vector Map  -->
+  <node pkg="map_file" type="vector_map_loader" name="vector_map_loader" args="$(find mission_manager)/now_hyo/dasan1_ndt/dtlane.csv $(find mission_manager)/now_hyo/dasan1_ndt/idx.csv $(find mission_manager)/now_hyo/dasan1_ndt/lane.csv $(find mission_manager)/now_hyo/dasan1_ndt/node.csv $(find mission_manager)/now_hyo/dasan1_ndt/point.csv" />
+  
+  <!-- DASAN Right Vector Map 
+  <node pkg="map_file" type="vector_map_loader" name="vector_map_loader" args="$(find mission_manager)/now_hyo/dasan1_ndt_right/dtlane.csv $(find mission_manager)/now_hyo/dasan1_ndt_right/idx.csv $(find mission_manager)/now_hyo/dasan1_ndt_right/lane.csv $(find mission_manager)/now_hyo/dasan1_ndt_right/node.csv $(find mission_manager)/now_hyo/dasan1_ndt_right/point.csv" />
+ --> 
+
+  <!-- DASAN Points Map  -->
+  <node pkg="map_file" type="points_map_loader" name="points_map_loader" args="noupdate $(find mission_manager)/now_hyo/dasan1.pcd" />
+
+</launch>

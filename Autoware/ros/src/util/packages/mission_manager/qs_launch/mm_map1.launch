@@ -1,0 +1,18 @@
+<launch>
+
+  <!-- TF -->
+  <include file="$(find mission_manager)/now_hyo/tf.launch"/>
+
+  <!-- SOONGSIL Map
+  <node pkg="map_file" type="vector_map_loader" name="vector_map_loader" args="$(find mission_manager)/now_hyo/soongsil_half/dtlane.csv $(find mission_manager)/now_hyo/soongsil_half/idx.csv $(find mission_manager)/now_hyo/soongsil_half/lane.csv $(find mission_manager)/now_hyo/soongsil_half/node.csv $(find mission_manager)/now_hyo/soongsil_half/point.csv" />
+  <node pkg="map_file" type="points_map_loader" name="points_map_loader" args="noupdate $(find mission_manager)/now_hyo/soongsil_fullmap_fast_binary.pcd" />
+  -->
+  
+  <!-- KCITY Map 
+  --> 
+  <node pkg="map_file" type="vector_map_loader" name="vector_map_loader" args="$(find mission_manager)/now_hyo/test_0706/3_tunnel_ver1/dtlane.csv $(find mission_manager)/now_hyo/test_0706/3_tunnel_ver1/idx.csv $(find mission_manager)/now_hyo/test_0706/3_tunnel_ver1/lane.csv $(find mission_manager)/now_hyo/test_0706/3_tunnel_ver1/node.csv $(find mission_manager)/now_hyo/test_0706/3_tunnel_ver1/point.csv" />
+  <node pkg="map_file" type="points_map_loader" name="points_map_loader" args="noupdate $(find mission_manager)/now_hyo/20190629_kcity_0.2_update.pcd" />
+
+  <!--include file="$(find avoid_workzone_avc)/launch/avoid_workzone.launch"/-->
+
+</launch>

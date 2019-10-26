@@ -1,0 +1,5 @@
+<launch>
+  <rosparam file="$(find vision_darknet_detect)/cfg/icthus_detect_cfg.yaml" command="load"/>
+  <node pkg="vision_darknet_detect" name="icthus_darknet_detect" type="icthus_darknet_detect" output="screen"/>
+
+</launch>

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>ndtscore_publisher</name>
+  <version>0.0.0</version>
+  <description>The ndtscore_publisher package</description>
+  <maintainer email="rubicom@todo.todo">rubicom</maintainer>
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>message_generation</build_depend>
+  <build_depend>message_runtime</build_depend>
+  <build_depend>roscpp</build_depend>
+	<build_depend>std_msgs</build_depend>
+	
+  <exec_depend>message_generation</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
+	<build_export_depend>roscpp</build_export_depend>
+	<build_export_depend>std_msgs</build_export_depend>
+
+  <export>
+  </export>
+</package>

@@ -1,0 +1,14 @@
+icthus_darknet_detect:
+  gpu_device_id: 0
+  score_threshold: 0.5
+  nms_threshold: 0.45
+  network_definition_file: "/home/vision_work/Documents/Untitled Folder/yolov3.cfg"
+  pretrained_model_file: "/home/vision_work/YOLO/weights/yolov3.weights"
+  names_file: "/home/vision_work/Documents/Untitled Folder/coco.names"
+  ann_path: "/home/vision_work/SelfDriving/file/annfileishere2.yml"
+  camera_id: "/"
+  resize_ratio: 1.0
+  left_camera_id: "left_camera"
+  right_camera_id: "right_camera"
+  left_image_raw_node: "/camera1/image_raw"
+  right_image_raw_node: "/camera0/image_raw"

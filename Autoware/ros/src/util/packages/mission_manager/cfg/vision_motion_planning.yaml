@@ -1,0 +1,32 @@
+op_common_params:
+  enableFollowing: true
+  enableLaneChange: false
+  enableStopSignBehavior: false
+  enableSwerving: true
+  enableTrafficLightBehavior: false
+  horizonDistance: 200.0
+  horizontalSafetyDistance: 0.5
+  maxAcceleration: 3.0
+  maxDeceleration: -3.0
+  maxDistanceToAvoid: 2.0
+  maxLocalPlanDistance: 80.0
+  maxVelocity: 20.0
+  minDistanceToAvoid: 15.0
+  minFollowingDistance: 30.0
+  pathDensity: 0.5
+  rollOutDensity: 0.8
+  rollOutsNumber: 20
+  velocitySource: 0
+  verticalSafetyDistance: 0.7
+op_motion_predictor:
+  enableCurbObstacles: true
+  enableGenrateBranches: false
+  enableParticleFilterPrediction: false
+  enableStepByStepSignal: false
+  max_distance_to_lane: 2.0
+  prediction_distance: 20.0
+op_trajectory_evaluator:
+  enablePrediction: true
+op_trajectory_generator:
+  samplingOutMargin: 8.0
+  samplingTipMargin: 4.0

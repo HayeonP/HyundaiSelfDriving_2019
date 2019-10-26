@@ -1,0 +1,5 @@
+<launch>
+      <!-- Vector Map -->
+            <include file="$(find avoid_workzone_avc)/launch/tf.launch"/>
+        <node pkg="map_file" type="vector_map_loader" name="vector_map_loader" args="$(find avoid_workzone_avc)/vectormap/6/dtlane.csv $(find avoid_workzone_avc)/vectormap/6/idx.csv $(find avoid_workzone_avc)/vectormap/6/lane.csv $(find avoid_workzone_avc)/vectormap/6/node.csv $(find avoid_workzone_avc)/vectormap/6/point.csv" />
+</launch>

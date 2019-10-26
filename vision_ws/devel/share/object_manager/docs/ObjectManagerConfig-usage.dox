@@ -1,0 +1,14 @@
+\subsubsection usage Usage
+\verbatim
+<node name="object_manager" pkg="object_manager" type="object_manager">
+  <param name="vision_flg" type="bool" value="True" />
+  <param name="spat_flg" type="bool" value="True" />
+  <param name="AMB_flg" type="bool" value="True" />
+  <param name="pedestrian_STOP_distance_threshold" type="double" value="30.0" />
+  <param name="pedestrian_LEFT_distance_threshold" type="double" value="4.55" />
+  <param name="pedestrian_RIGHT_distance_threshold" type="double" value="-0.9" />
+  <param name="spat_wait_threshold" type="double" value="2.0" />
+  <param name="force_emergency_vehicle_avoidance" type="bool" value="False" />
+</node>
+\endverbatim
+

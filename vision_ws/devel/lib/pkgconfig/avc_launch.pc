@@ -1,0 +1,8 @@
+prefix=/home/autoware/vision_ws/devel
+
+Name: avc_launch
+Description: Description of avc_launch
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/autoware/vision_ws/devel/lib 
+Requires: 

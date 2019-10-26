@@ -1,0 +1,24 @@
+#!/bin/bash
+
+nargs=$#
+progname=$1
+if [ $nargs != 1 ]; then
+	echo "usage: $0 {program_name}"
+	exit 0
+fi 
+
+pid_list=`ps -axj | grep $progname | awk -F' ' '{print $2}'`
+
+#echo $pid_list
+
+for pid in $pid_list; do 
+	cmd=`ps -p $pid | grep $progname | awk -F' ' '{print $4}'`	
+	#echo hhh${cmd}ttt
+	if [ "$cmd" == "$progname" ]; then
+		echo "$pid"
+		exit 0
+	fi
+done
+
+echo "None"  # the process of $progname is not found!!
+

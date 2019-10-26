@@ -1,0 +1,3 @@
+set can up
+set can on
+set hvi up

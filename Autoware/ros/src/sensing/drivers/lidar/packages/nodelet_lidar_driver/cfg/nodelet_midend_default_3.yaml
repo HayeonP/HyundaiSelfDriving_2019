@@ -1,0 +1,2 @@
+pub_topic: "vlp3/points_raw"
+sub_topic: "right/lidar_msg"

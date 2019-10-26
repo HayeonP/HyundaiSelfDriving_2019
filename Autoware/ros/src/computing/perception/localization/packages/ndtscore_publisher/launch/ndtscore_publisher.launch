@@ -1,0 +1,3 @@
+<launch>
+	<node pkg="ndtscore_publisher" type="ndtscore_publisher" name="ndtscore_publisher" output="screen"/>
+</launch>

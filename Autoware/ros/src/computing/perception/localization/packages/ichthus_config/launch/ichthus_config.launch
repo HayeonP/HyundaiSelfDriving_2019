@@ -1,0 +1,3 @@
+<launch>
+    <node name="ichthus_config" pkg="ichthus_config" type="ichthus_config" output="screen"/>
+</launch>

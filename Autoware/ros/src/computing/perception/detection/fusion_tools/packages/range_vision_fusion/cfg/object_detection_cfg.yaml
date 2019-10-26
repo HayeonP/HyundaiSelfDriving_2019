@@ -1,0 +1,17 @@
+# Base TF
+base_x: 0.7
+base_y: 1.75
+base_z: 0
+base_yaw: 0
+base_pitch: 0
+base_roll: 0
+base_id: "/base_link"
+lidar_id: "/velodyne"
+
+
+detected_objects_vision: "/detection/image_detector/objects"
+camera_info_src: "/camera1/camera_info"
+min_car_dimensions: [2,2,4]
+min_person_dimensions: [1,2,1]
+min_truck_dimensions: [2,2,4.5]
+sync_topics: true

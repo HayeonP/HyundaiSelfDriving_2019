@@ -1,0 +1,17 @@
+<library path="lib/libnodelet_lidar_driver"> 
+  <class name="nodelet_lidar_driver/LidarNodeletFront" type="LidarNodeletFront::LidarNodeletFront" base_class_type="nodelet::Nodelet"> 
+    <description>  
+      LidarNodeletFront. 
+    </description> 
+  </class>
+  <class name="nodelet_lidar_driver/LidarNodeletMid" type="LidarNodeletMid::LidarNodeletMid" base_class_type="nodelet::Nodelet"> 
+    <description>  
+      LidarNodeletMid. 
+    </description> 
+  </class> 
+  <class name="nodelet_lidar_driver/LidarNodeletBack" type="LidarNodeletBack::LidarNodeletBack" base_class_type="nodelet::Nodelet"> 
+    <description>  
+      LidarNodeletBack. 
+    </description> 
+  </class> 
+</library> 
